@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="TestPlugin.cMover.cMoverGUI"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TestPlugin.cMover"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!--Please Note!-->
+        <!--A bug in Visual Studio, sometime, bug out the design vies that show `Invalid Markup` after you set the Datacontext like done in next line.-->
+        <!--Temporary solution is to remove `DataContext="{x:Static local:NullBotSettings.Instance}"` while you develope your UI and readd it befor compilation.-->
+        <GroupBox Header="Options" DataContext="{x:Static local:cMoverSettings.Instance}">
+            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+                <Label Content="MinMoveDistance name"/>
+                <StackPanel Margin="10">
+                    <CheckBox Grid.Row="0" Grid.Column="0" Content="Randomize Movement" Margin="10,0,10,0" IsChecked="{Binding Path=RandomizeMove, Mode=TwoWay}" VerticalAlignment="Center" ToolTip="Should follower randomize movement?"/>
+                    <Label Content="Path refresh rate"/>
+                    <TextBox Text="{Binding PathRefreshRate, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" />
+                    <Label Content="Min step distance"/>
+                    <TextBox Text="{Binding MinMoveDistance, ValidatesOnDataErrors=True, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock Text="{Binding Error}" Foreground="Red" />
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+    </Grid>
+</UserControl>
