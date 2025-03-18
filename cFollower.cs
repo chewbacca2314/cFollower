@@ -112,7 +112,7 @@ namespace cFollower
             _taskManager.Add(new TradeTask());
             _taskManager.Add(new DepositTask());
             _taskManager.Add(new FollowTask());
-            _taskManager.Add(new LootTask());
+            //_taskManager.Add(new LootTask());
             _taskManager.Add(new FallbackTask());
         }
 

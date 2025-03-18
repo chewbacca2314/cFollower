@@ -32,7 +32,7 @@ namespace cFollower
         public async Task<bool> Run()
         {
             Log.Debug($"[{Name}] Do nothing.");
-            await Wait.Sleep(1000);
+            await Wait.Sleep(1);
             return true;
         }
         public async Task<LogicResult> Logic (Logic logic)

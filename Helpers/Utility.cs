@@ -22,7 +22,7 @@ namespace cFollower
 
         public static PartyMember GetLeaderPartyMember()
         {
-            return LokiPoe.InstanceInfo.PartyMembers.FirstOrDefault(x => x.PlayerEntry.Name == cFollowerSettings.Instance.LeaderName);
+            return LokiPoe.InstanceInfo.PartyMembers?.FirstOrDefault(x => x.PlayerEntry.Name == cFollowerSettings.Instance.LeaderName);
         }
         public static Player GetLeaderPlayer()
         {

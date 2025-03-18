@@ -73,10 +73,10 @@ namespace cFollower
                         }
 
                         var interactionResult = await Coroutines.InteractWith(areaTransition);
-                        Log.Debug($"[{Name}] Interacting with area transition at {areaTransition.Position}. Succesful?: {interactionResult}");
-                        await Wait.LatencySleep();
+                        Log.Debug($"[{Name}] Interacting with area transition {areaTransition.Name} at {areaTransition.Position}. Succesful?: {interactionResult}");
+                        await Wait.SleepSafe(100, 200);
 
-                        if (arenaBlockages.Count > 0)
+                        if (arenaBlockages?.Any() == true)
                         {
                             foreach (var x in arenaBlockages)
                             {
@@ -110,7 +110,7 @@ namespace cFollower
                 }
                 else
                 {
-                    if (ZoneHelper.IsLeaderInLab() && (LokiPoe.CurrentWorldArea.IsLabyrinthArea || LokiPoe.CurrentWorldArea.Name == "Aspirant's Plaza")) // add interaction with lab trial later on
+                    if (ZoneHelper.IsLeaderInLab() && (LokiPoe.CurrentWorldArea.IsLabyrinthArea || LokiPoe.CurrentWorldArea.Name == "Aspirants' Plaza")) // add interaction with lab trial later on
                     {
                         Log.Debug($"[{Name}] Leader in lab. Trying to find transition");
                         var leaderArea = Utility.GetLeaderPartyMember().PlayerEntry.Area;

@@ -40,11 +40,12 @@ namespace cFollower
 
             if (LokiPoe.InGameState.NotificationHud.IsOpened)
             {
+                LokiPoe.ProcessHookManager.ClearAllKeyStates();
                 var acceptResult = LokiPoe.InGameState.NotificationHud.HandleNotificationEx(IsTradeRequestToBeAccepted);
                 Log.Debug($"[{Name}] Found notification. Accept result: {acceptResult}");
             }
 
-            if (!await Wait.For(() => LokiPoe.InGameState.TradeUi.IsOpened, "trade ui opened", 100, 1000))
+            if (!await Wait.For(() => LokiPoe.InGameState.TradeUi.IsOpened, "trade ui opened", 500, 10000))
             {
                 Log.Warn($"[{Name}] Trade UI not opened");
                 await Coroutines.CloseBlockingWindows();
@@ -151,8 +152,8 @@ namespace cFollower
 
         public async Task<bool> ProcessAcceptButton()
         {
-            if (await Wait.For(() => tradeControl.IsConfirmLabelVisible
-            || tradeControl.ConfirmLabelText == "Not enough space to accept this trade", "Not enough space to accept this trade", 100, 20000))
+            if (!await Wait.For(() => !tradeControl.IsConfirmLabelVisible
+            && tradeControl?.ConfirmLabelText != "Not enough space to accept this trade", "Not enough space to accept this trade", 500, 20000))
                 return false;
 
             Log.Debug($"[{Name}] Pressing Accept button");
