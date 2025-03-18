@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using DreamPoeBot.Loki;
 using DreamPoeBot.Loki.Common;
 
-namespace TestPlugin
+namespace cFollower
 {
     internal class cFollowerSettings : JsonSettings
     {
@@ -36,6 +36,7 @@ namespace TestPlugin
         private int _stashDepositDelay;
         private int _guildStashDepositDelay;
         private int _tradeDepositDelay;
+        private int _obstacleSizeMultiplier;
         public ObservableCollection<ItemFilter> ItemFilterList
         {
             get => _itemFilterList;//?? (_defensiveSkills = new ObservableCollection<DefensiveSkillsClass>());
@@ -93,6 +94,17 @@ namespace TestPlugin
                 if (value == _minDistance) return;
                 _minDistance = value;
                 NotifyPropertyChanged(() => MinDistanceToFollow);
+            }
+        }
+        [DefaultValue(2)]
+        public int ObstacleSizeMultiplier
+        {
+            get { return _obstacleSizeMultiplier; }
+            set
+            {
+                if (value == _obstacleSizeMultiplier) return;
+                _obstacleSizeMultiplier = value;
+                NotifyPropertyChanged(() => ObstacleSizeMultiplier);
             }
         }
         public int DistanceToCheckTransition

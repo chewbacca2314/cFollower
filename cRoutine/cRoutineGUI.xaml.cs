@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TestPlugin.cRoutine
+namespace cFollower.cRoutine
 {
     /// <summary>
     /// Interaction logic for cRoutineGUI.xaml

@@ -9,7 +9,7 @@ using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
 using log4net;
 
-namespace TestPlugin
+namespace cFollower
 {
     public class FallbackTask : ITask
     {

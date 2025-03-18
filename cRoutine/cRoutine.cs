@@ -8,9 +8,9 @@ using System.Windows.Controls;
 using DreamPoeBot.Loki.Bot;
 using DreamPoeBot.Loki.Common;
 using log4net;
-using TestPlugin.cRoutine;
+using cFollower.cRoutine;
 
-namespace TestPlugin.cRoutine
+namespace cFollower.cRoutine
 {
     public class cRoutine : IRoutine
     {

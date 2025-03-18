@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using DreamPoeBot.Loki;
 using DreamPoeBot.Loki.Common;
 
-namespace TestPlugin.cMover
+namespace cFollower.cMover
 {
     public class cMoverSettings : JsonSettings
     {

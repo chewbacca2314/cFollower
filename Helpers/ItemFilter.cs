@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using System.Runtime.CompilerServices;
 
-namespace TestPlugin
+namespace cFollower
 {
     public class ItemFilter : INotifyPropertyChanged
     {

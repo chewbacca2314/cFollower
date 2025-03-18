@@ -15,7 +15,7 @@ using DreamPoeBot.Loki.Game;
 using DreamPoeBot.Loki.RemoteMemoryObjects;
 using log4net;
 
-namespace TestPlugin.cMover
+namespace cFollower.cMover
 {
     public class cMover : IPlayerMover
     {

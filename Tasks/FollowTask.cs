@@ -9,9 +9,9 @@ using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
 using DreamPoeBot.Loki.Game.Objects;
 using log4net;
-using TestPlugin.cMover;
+using cFollower.cMover;
 
-namespace TestPlugin
+namespace cFollower
 {
     public class FollowTask : ITask
     {

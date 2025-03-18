@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using DreamPoeBot.Loki;
 using DreamPoeBot.Loki.Common;
 
-namespace TestPlugin.cRoutine
+namespace cFollower.cRoutine
 {
     public class cRoutineSettings : JsonSettings
     {

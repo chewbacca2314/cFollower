@@ -17,7 +17,7 @@ using DreamPoeBot.Loki.Game.Objects;
 using DreamPoeBot.Loki.RemoteMemoryObjects;
 using log4net;
 
-namespace TestPlugin
+namespace cFollower
 {
     public class LootTask : ITask
     {

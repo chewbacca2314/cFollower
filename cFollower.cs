@@ -11,12 +11,11 @@ using DreamPoeBot.Loki.Coroutine;
 using DreamPoeBot.Loki.Game;
 using log4net;
 
-namespace TestPlugin
+namespace cFollower
 {
     internal class cFollower : IBot
     {
         private static readonly ILog Log = Logger.GetLoggerInstanceForType();
-
 
         private cFollowerGUI _gui;
         public UserControl Control => _gui ?? (_gui = new cFollowerGUI());
@@ -26,56 +25,50 @@ namespace TestPlugin
         private readonly TaskManager _taskManager = new TaskManager();
         private Coroutine _coroutine;
 
-        public string Author => "chewbacca";
-        public string Description => "thing that does something";
-        public string Name => "cFollower";
-        public string Version => "0.0.0.1";
-        public override string ToString() => $"{Name}: {Description}";
-        public void Initialize()
-        {
-            Log.Info($"Initializing {Name} - {Description} by {Author}, version {Version}");
-        }
-        public void Deinitialize()
-        {
-            Log.Info($"Deinitializing {Name} - {Description} by {Author}, version {Version}");
-        }
         public void Start()
         {
             BotManager.MsBetweenTicks = 40;
+            Log.Debug($"[Start] MS Between Ticks {BotManager.MsBetweenTicks}.");
 
             LokiPoe.ProcessHookManager.Enable();
 
             // Cache all bound keys.
             LokiPoe.Input.Binding.Update();
-            
+
             ExilePather.Reload();
 
             _taskManager.Reset();
             PluginManager.Start();
             RoutineManager.Start();
             PlayerMoverManager.Start();
-            _taskManager.Start();
 
-            //Log.Debug($"[Start] Current PlayerMover: {PlayerMoverManager.Current.Name}.");
-            //Log.Debug($"[Start] Current Routine {RoutineManager.Current.Name}.");
-            Log.Debug($"[Start] MS Between Ticks {BotManager.MsBetweenTicks}.");
+            AddTasks();
+            _taskManager.Start();
 
             foreach (var plugin in PluginManager.EnabledPlugins)
             {
                 Log.Debug($"[Start] The plugin {plugin.Name} is enabled.");
             }
 
-            AddTasks();
         }
+
         public void Stop()
         {
-            LokiPoe.ProcessHookManager.Disable();
-
             PluginManager.Stop();
             RoutineManager.Stop();
             PlayerMoverManager.Stop();
             _taskManager.Stop();
+
+            LokiPoe.ProcessHookManager.Disable();
+
+            // Cleanup the coroutine.
+            if (_coroutine != null)
+            {
+                _coroutine.Dispose();
+                _coroutine = null;
+            }
         }
+
         public void Tick()
         {
             if (_coroutine == null)
@@ -89,10 +82,6 @@ namespace TestPlugin
             RoutineManager.Tick();
             PlayerMoverManager.Tick();
             _taskManager.Tick();
-
-            //Log.Debug("[Tick] Executing tick event");
-            //Log.Debug($"[TICK] MS Between Ticks {BotManager.MsBetweenTicks}.");
-            //Log.Debug($"[TICK] Time of last tick: {BotManager.TimeOfLastTick}");
 
             if (_coroutine.IsFinished)
             {
@@ -114,16 +103,9 @@ namespace TestPlugin
                 throw;
             }
         }
-        public MessageResult Message(Message message)
-        {
-            return MessageResult.Unprocessed;
-        }
-        public async Task<LogicResult> Logic(Logic logic)
-        {
-            return await _taskManager.ProvideLogic(TaskGroup.Enabled, RunBehavior.UntilHandled, logic);
-        }
+
         public void AddTasks()
-        {;
+        {
             _taskManager.Add(new PartyHandler());
             _taskManager.Add(new RessurectionTask());
             _taskManager.Add(new ZoneHandler());
@@ -133,18 +115,42 @@ namespace TestPlugin
             _taskManager.Add(new LootTask());
             _taskManager.Add(new FallbackTask());
         }
+
         private async Task MainCoroutine()
         {
-            // This function is an endless running function that newer return, b/c its created and sestroied by the Start and Stop event functions.
             while (true)
             {
-
                 await _taskManager.Run(TaskGroup.Enabled, RunBehavior.UntilHandled);
-                //await Wait.SleepSafe(150, 300);
-                // End of the tick.
+                
                 await Coroutine.Yield();
             }
-            // ReSharper disable once FunctionNeverReturns
+        }
+
+        public string Author => "chewbacca";
+        public string Description => "follow bot";
+        public string Name => "cFollower";
+        public string Version => "0.0.0.1";
+
+        public override string ToString() => $"{Name}: {Description}";
+
+        public void Initialize()
+        {
+            Log.Info($"Initializing {Name} - {Description} by {Author}, version {Version}");
+        }
+
+        public void Deinitialize()
+        {
+            Log.Info($"Deinitializing {Name} - {Description} by {Author}, version {Version}");
+        }
+
+        public MessageResult Message(Message message)
+        {
+            return MessageResult.Unprocessed;
+        }
+
+        public async Task<LogicResult> Logic(Logic logic)
+        {
+            return await _taskManager.ProvideLogic(TaskGroup.Enabled, RunBehavior.UntilHandled, logic);
         }
     }
 }

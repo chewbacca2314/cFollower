@@ -7,8 +7,8 @@
     <ProjectGuid>{4609625F-0F76-4498-B497-EDA8907F6884}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestPlugin</RootNamespace>
-    <AssemblyName>TestPlugin</AssemblyName>
+    <RootNamespace>cFollower</RootNamespace>
+    <AssemblyName>cFollower</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -63,7 +63,8 @@
     <Compile Include="cRoutine\cRoutineGUI.xaml.cs">
       <DependentUpon>cRoutineGUI.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ItemFilter.cs" />
+    <Compile Include="Helpers\ItemFilter.cs" />
+    <Compile Include="Helpers\Utility.cs" />
     <Compile Include="Tasks\FollowTask.cs" />
     <Compile Include="cMover\cMoverSettings.cs" />
     <Compile Include="cRoutine\cRoutine.cs" />
@@ -81,7 +82,7 @@
     <Compile Include="Tasks\FallbackTask.cs" />
     <Compile Include="Tasks\LootTask.cs" />
     <Compile Include="Tasks\DepositTask.cs" />
-    <Compile Include="TestTask.cs" />
+    <Compile Include="Tasks\TestTask.cs" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="cMover\cMoverGUI.xaml">

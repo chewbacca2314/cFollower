@@ -15,7 +15,7 @@ using DreamPoeBot.Loki.Game.Objects;
 using log4net;
 using static DreamPoeBot.Loki.Game.LokiPoe.InGameState;
 
-namespace TestPlugin
+namespace cFollower
 {
     public class TradeTask : ITask
     {

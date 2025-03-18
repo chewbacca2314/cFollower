@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TestPlugin.cMover
+namespace cFollower.cMover
 {
     /// <summary>
     /// Interaction logic for UserControl1.xaml

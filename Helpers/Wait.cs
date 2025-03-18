@@ -10,7 +10,7 @@ using DreamPoeBot.Loki.Coroutine;
 using DreamPoeBot.Loki.Game;
 using log4net;
 
-namespace TestPlugin
+namespace cFollower
 {
     public static class Wait
     {

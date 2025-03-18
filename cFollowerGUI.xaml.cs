@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace TestPlugin
+namespace cFollower
 {
     /// <summary>
     /// Interaction logic for cFollowerGui.xaml
