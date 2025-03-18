@@ -39,6 +39,7 @@
                             <TextBox Text="{Binding Path=DistanceToCheckTransition, Mode=TwoWay}" ToolTip="Distance of leader coords changed to start checking for transition nearby"/>
                             <Label Content="Obstacle size multiplier (blocking arenas)"/>
                             <TextBox Text="{Binding Path=ObstacleSizeMultiplier, Mode=TwoWay}" ToolTip="Obstacle size multiplier to block close arena transitions"/>
+                            <CheckBox Content="Trade toggle" IsChecked="{Binding Path=TradeEnabled, Mode=TwoWay}"/>
                         </StackPanel>
                     </GroupBox>
                     <GroupBox Header="Deposit" Grid.Row="1" Grid.Column="0">

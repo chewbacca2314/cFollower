@@ -40,7 +40,7 @@ namespace cFollower
                 Log.Info($"[{Name}] LokiPoe.IsInGame = {LokiPoe.IsInGame}");
                 return false;
             }
-            Player leader = PartyHandler.GetLeaderPlayer();
+            Player leader = Utility.GetLeaderPlayer();
             if (leader != null)
             {
                 float distanceToLeader = leader.Distance;

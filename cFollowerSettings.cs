@@ -28,6 +28,7 @@ namespace cFollower
         private int _transitionCheckDistance;
         private bool _lootEnabled;
         private bool _depositEnabled;
+        private bool _tradeEnabled;
         private int _distanceToLeaderLoot;
         private int _distanceLootLeader;
         private float _distanceToLootPlayer;
@@ -66,6 +67,7 @@ namespace cFollower
                 NotifyPropertyChanged(() => LeaderName);
             }
         }
+        [DefaultValue(true)]
         public bool LootEnabled
         {
             get { return _lootEnabled; }
@@ -76,6 +78,7 @@ namespace cFollower
                 NotifyPropertyChanged(() => LootEnabled);
             }
         }
+        [DefaultValue(true)]
         public bool DepositEnabled
         {
             get { return _depositEnabled; }
@@ -84,6 +87,17 @@ namespace cFollower
                 if (value == _depositEnabled) return;
                 _depositEnabled = value;
                 NotifyPropertyChanged(() => DepositEnabled);
+            }
+        }
+        [DefaultValue(true)]
+        public bool TradeEnabled
+        {
+            get { return _tradeEnabled; }
+            set
+            {
+                if (value == _tradeEnabled) return;
+                _tradeEnabled = value;
+                NotifyPropertyChanged(() => TradeEnabled);
             }
         }
         public int MinDistanceToFollow
@@ -127,6 +141,7 @@ namespace cFollower
                 NotifyPropertyChanged(() => DistanceToLeaderLoot);
             }
         }
+        [DefaultValue(50)]
         public int StashDepositDelay
         {
             get { return _stashDepositDelay; }
@@ -137,6 +152,7 @@ namespace cFollower
                 NotifyPropertyChanged(() => StashDepositDelay);
             }
         }
+        [DefaultValue(200)]
         public int GuildStashDepositDelay
         {
             get { return _guildStashDepositDelay; }
@@ -147,6 +163,7 @@ namespace cFollower
                 NotifyPropertyChanged(() => GuildStashDepositDelay);
             }
         }
+        [DefaultValue(50)]
         public int TradeDepositDelay
         {
             get { return _tradeDepositDelay; }

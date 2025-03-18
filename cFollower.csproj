@@ -64,6 +64,9 @@
       <DependentUpon>cRoutineGUI.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helpers\ItemFilter.cs" />
+    <Compile Include="Helpers\ZoneHelper.cs" />
+    <Compile Include="Helpers\TradeHelper.cs" />
+    <Compile Include="Helpers\TemplateHelper.cs" />
     <Compile Include="Helpers\Utility.cs" />
     <Compile Include="Tasks\FollowTask.cs" />
     <Compile Include="cMover\cMoverSettings.cs" />

@@ -29,7 +29,7 @@ namespace cFollower
                 return false;
             }
 
-            if (IsInSameZoneWithLeader())
+            if (ZoneHelper.IsInSameZoneWithLeader())
             {
                 var leader = Utility.GetLeaderPlayer();
                 var leaderPos = leader.Position;
@@ -91,7 +91,7 @@ namespace cFollower
             }
             else
             {
-                if (IsLeaderOnMap())
+                if (ZoneHelper.IsLeaderOnMap())
                 {
                     Log.Debug($"[{Name}] Leader on map. Trying to find portals");
                     var portals = LokiPoe.ObjectManager.InTownPortals.OrderBy(x => x.Distance).ToList();
@@ -110,7 +110,7 @@ namespace cFollower
                 }
                 else
                 {
-                    if (IsLeaderInLab() && (LokiPoe.CurrentWorldArea.IsLabyrinthArea || LokiPoe.CurrentWorldArea.Name == "Aspirant's Plaza")) // add interaction with lab trial later on
+                    if (ZoneHelper.IsLeaderInLab() && (LokiPoe.CurrentWorldArea.IsLabyrinthArea || LokiPoe.CurrentWorldArea.Name == "Aspirant's Plaza")) // add interaction with lab trial later on
                     {
                         Log.Debug($"[{Name}] Leader in lab. Trying to find transition");
                         var leaderArea = Utility.GetLeaderPartyMember().PlayerEntry.Area;
@@ -120,14 +120,15 @@ namespace cFollower
                             Log.Debug($"[{Name}] Leader in lab. Transition found at {leaderTransition.Position}");
                             await Coroutines.InteractWith(leaderTransition);
                             await Wait.LatencySleep();
-                        } else
+                        }
+                        else
                         {
                             return true;
                         }
                     }
                     else
                     {
-                        if (!IsLeaderInLab() && (IsLeaderInCombatArea() || IsLeaderInHideout() || IsLeaderInTown()))
+                        if (!ZoneHelper.IsLeaderInLab() && (ZoneHelper.IsLeaderInCombatArea() || ZoneHelper.IsLeaderInHideout() || ZoneHelper.IsLeaderInTown()))
                         {
                             Log.Debug($"[{Name}] Leader is in combat area/hideout. Swirling");
                             LokiPoe.InGameState.PartyHud.FastGoToZone(Utility.GetLeaderPartyMember().PlayerEntry.Name);
@@ -139,80 +140,12 @@ namespace cFollower
             return true;
         }
 
-        public static bool IsLeaderInHideout()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return leader.PlayerEntry.Area.IsHideoutArea;
-            }
-
-            return false;
-        }
-
-        public static bool IsLeaderOnMap()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return leader.PlayerEntry.Area.IsMap;
-            }
-
-            return false;
-        }
-
-        public static bool IsLeaderInCombatArea()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return leader.PlayerEntry.Area.IsCombatArea;
-            }
-
-            return false;
-        }
-
-        public static bool IsLeaderInLab()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return leader.PlayerEntry.Area.IsLabyrinthArea;
-            }
-
-            return false;
-        }
-
-        public static bool IsLeaderInTown()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return leader.PlayerEntry.Area.IsTown;
-            }
-
-            return false;
-        }
-
-        public static bool IsInSameZoneWithLeader()
-        {
-            var leader = Utility.GetLeaderPartyMember();
-            if (leader != null)
-            {
-                return LokiPoe.InGameState.PartyHud.IsInSameZone(leader.PlayerEntry.Name);
-            }
-
-            return false;
-        }
-
         #region skip
 
         public string Name => "Zone Handler";
         public string Description => "Class to handle zone transition/swirl";
         public string Author => "chewbacca";
         public string Version => "0.0.0.1";
-        private float oldDistance;
-        private float newDistance;
 
         public void Start()
         {

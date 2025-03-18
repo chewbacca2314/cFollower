@@ -10,6 +10,7 @@ using DreamPoeBot.Loki.Bot.Pathfinding;
 using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
 using DreamPoeBot.Loki.Game.GameData;
+using DreamPoeBot.Loki.Game.NativeWrappers;
 using DreamPoeBot.Loki.Game.Objects;
 using DreamPoeBot.Loki.RemoteMemoryObjects;
 using log4net;
@@ -21,32 +22,47 @@ namespace cFollower
         public async Task<bool> Run()
         {
             if (!cFollowerSettings.Instance.DepositEnabled)
+            {
+                //Log.Debug($"[{Name}] Deposit toggle: {cFollowerSettings.Instance.DepositEnabled}");
                 return false;
+            }
+                
 
             if (!LokiPoe.IsInGame)
             {
-                Log.Info($"[{Name}] LokiPoe.IsInGame = {LokiPoe.IsInGame}");
+                //Log.Debug($"[{Name}] LokiPoe.IsInGame = {LokiPoe.IsInGame}");
                 return false;
             }
 
             if (!LokiPoe.Me.IsInHideout)
             {
-                Log.Info($"[{Name}] LokiPoe.Me.IsInHideout = {LokiPoe.Me.IsInHideout}");
+                //Log.Debug($"[{Name}] LokiPoe.Me.IsInHideout = {LokiPoe.Me.IsInHideout}");
                 return false;
             }
 
-            if (!await ZoneHandler.IsInSameZoneWithLeader())
+            if (!ZoneHelper.IsInSameZoneWithLeader())
             {
-                Log.Info($"[{Name}] We're not in same zone with leader");
+                //Log.Debug($"[{Name}] We're not in same zone with leader");
                 return false;
             }
 
+            if (GetGuildStash() == null)
+            {
+                //Log.Debug("[GetGuildStash] Guild stash is null");
+                return false;
+            }
 
-            var inventoryControl = TradeTask.GetInventoryControl();
+            var inventoryControl = TradeHelper.GetInventoryControl();
+
+            if (inventoryControl == null)
+            {
+                Log.Warn($"[{Name}] Inventory control is null");
+                return false;
+            }
+
             var inventory = inventoryControl.Inventory;
             if (inventory.Items.Where(x => x.Rarity != Rarity.Quest).ToList().Count <= 0)
             {
-                Log.Debug($"[{Name}] Items count {inventory.Items.Where(x => x.Rarity != Rarity.Quest).ToList().Count}. Returning false");
                 return false;
             }
 
@@ -60,7 +76,7 @@ namespace cFollower
 
             Log.Debug($"[{Name}] Items count {inventory.Items.Where(x => x.Rarity != Rarity.Quest).ToList().Count}");
 
-            await TradeTask.MoveAllFromInventory(inventory, inventoryControl, TradeTask.MoveType.GuildStash);
+            await TradeHelper.MoveAllFromInventory(inventoryControl, TradeTask.MoveType.GuildStash);
             await Coroutines.CloseBlockingWindows();
 
             return true;
@@ -68,54 +84,68 @@ namespace cFollower
 
         public static async Task<bool> FindGuildStash()
         {
-            var guildStash = LokiPoe.ObjectManager.GetObjectByType<GuildStash>();
-            await Wait.For(() => guildStash != null, "guild stash null", 50, 300);
-            if (guildStash == null)
-            {
-                Log.Debug($"[DepositTask] Guild stash is null");
-                return false;
-            }
+            //var guildStash = LokiPoe.ObjectManager.GetObjectByType<GuildStash>();
+            var guildStashIconWrapper = GetGuildStash();
+            var guildStashPos = guildStashIconWrapper.LastSeenPosition;
+            var myPos = LokiPoe.MyPosition;
 
             while (!LokiPoe.InGameState.IsLeftPanelShown)
             {
-                while (guildStash.Distance > 100)
+                while (guildStashPos.Distance(myPos) > 70)
                 {
-                    if (PlayerMoverManager.Current.MoveTowards(guildStash.Position))
+                    myPos = LokiPoe.MyPosition;
+                    //Log.Debug($"[FindGuildStash] myPos: {myPos} LokiPoe.Me.Position: {LokiPoe.Me.Position} guildStashPos: {guildStashPos} distancefrom: {guildStashPos.Distance(myPos)} distanceto: {myPos.Distance(guildStashPos)}");
+
+                    if (PlayerMoverManager.Current.MoveTowards(guildStashPos))
                     {
-                        Log.Debug($"[DepositTask] Guild stash found at {guildStash.Position}. Moving");
+                        Log.Debug($"[FindGuildStash] Guild stash found at {guildStashPos}. Moving");
                     }
                     else
                     {
-                        Log.Error($"[DepositTask] Guild stash found at {guildStash.Position}. Failed to move");
+                        Log.Error($"[FindGuildStash] Guild stash found at {guildStashPos}. Failed to move");
                     }
                 }
 
-                Log.Debug($"[DepositTask] Guild stash is close enough. Interacting with it");
-                if (await Coroutines.InteractWith(guildStash))
+                Log.Debug($"[FindGuildStash] Guild stash is close enough. Interacting with it");
+
+                var guildStashObject = guildStashIconWrapper?.NetworkObject;
+
+                if (guildStashObject == null)
                 {
-                    Log.Debug($"[DepositTask] Succesful interact");
-                    if (LokiPoe.InGameState.IsLeftPanelShown)
+                    Log.Warn("[FindGuildStash] Guild stash is still null");
+                    return false;
+                }
+
+                if (await Coroutines.InteractWith(guildStashObject))
+                {
+                    Log.Debug($"[FindGuildStash] Succesful interact");
+                    if (await Wait.For(() => LokiPoe.InGameState.IsLeftPanelShown, "guild stash open", 500, 3000))
                     {
-                        Log.Debug($"[DepositTask] Left panel found");
                         return true;
                     }
                 }
                 else
                 {
-                    Log.Debug($"[DepositTask] Guild stash is null");
+                    Log.Debug($"[FindGuildStash] Guild stash is null");
                 };
-                await Wait.Sleep(100);
+
+                await Wait.LatencySleep();
             }
 
             return false;
         }
 
-        public async Task<bool> FindStash()
+        public static MinimapIconWrapper GetGuildStash()
+        {
+            return LokiPoe.InstanceInfo.MinimapIcons.FirstOrDefault(x => x.MinimapIcon.Name == "StashGuild");
+        }
+
+        public static async Task<bool> FindStash()
         {
             var stash = LokiPoe.ObjectManager.Stash;
             if (stash == null)
             {
-                Log.Debug($"[{Name}] Guild stash is null");
+                Log.Debug($"[FindStash] Guild stash is null");
                 return false;
             }
 
@@ -125,93 +155,36 @@ namespace cFollower
                 {
                     if (PlayerMoverManager.Current.MoveTowards(stash.Position))
                     {
-                        Log.Debug($"[{Name}] Stash found at {stash.Position}. Moving");
+                        Log.Debug($"[FindStash] Stash found at {stash.Position}. Moving");
                     }
                     else
                     {
-                        Log.Error($"[{Name}] Stash found at {stash.Position}. Failed to move");
+                        Log.Error($"[FindStash] Stash found at {stash.Position}. Failed to move");
                     }
                 }
 
-                Log.Debug($"[{Name}] Trying to interact with stash");
+                Log.Debug($"[FindStash] Trying to interact with stash");
                 if (await Coroutines.InteractWith(stash))
                 {
-                    Log.Debug($"[{Name}] Succesfully interacted");
+                    Log.Debug($"[FindStash] Succesfully interacted");
                 }
                 else
                 {
-                    Log.Debug($"[{Name}] Failed to interact");
+                    Log.Debug($"[FindStash] Failed to interact");
                 };
                 await Wait.Sleep(100);
             }
 
             if (LokiPoe.InGameState.IsLeftPanelShown)
             {
-                Log.Debug($"[{Name}] Succesfully interacted");
+                Log.Debug($"[FindStash] Succesfully interacted");
                 return true;
             }
 
             return false;
         }
 
-        public static async Task<bool> SelectProperTab(Item item)
-        {
-            if (LokiPoe.InGameState.GuildStashUi.TabControl == null)
-            {
-                Log.Debug($"[SelectProperTab] TabControl == null");
-                return false;
-            }
-
-            if (!LokiPoe.InGameState.GuildStashUi.IsOpened)
-            {
-                Log.Debug($"[SelectProperTab] LokiPoe.InGameState.GuildStashUi.IsOpened == false");
-                return false;
-            }
-
-            var tabControl = LokiPoe.InGameState.GuildStashUi.TabControl;
-            var depositTabNames = ParseByDivider(cFollowerSettings.Instance.DepositTabNames, ',');
-
-            foreach (var tab in depositTabNames)
-            {
-                if (tabControl.TabNames.Any(x => x == tab))
-                {
-                    var result = tabControl.SwitchToTabKeyboard(tab);
-                    if (!await Wait.For(() => result == SwitchToTabResult.None, "switching tab", 100, 1000))
-                    {
-                        Log.Warn($"[SelectProperTab] Tab switching error because: {result}");
-                    }
-
-                    var tabObject = LokiPoe.InstanceInfo.GuildStashTabs.First(x => x.DisplayName == tab);
-
-                    if (await Wait.For(() => LokiPoe.InGameState.GuildStashUi.InventoryControl.Inventory != null, "load stash inventory", 100, 1000))
-                    {
-                        if (LokiPoe.InGameState.GuildStashUi.InventoryControl.Inventory.CanFitItem(item))
-                        {
-                            Log.Debug($"[SelectProperTab] Can fit item in current tab.");
-                            return true;
-                        }
-                        else
-                        {
-                            Log.Warn($"[SelectProperTab] CANNOT fit item in current tab. Changing tab.");
-                            continue;
-                        };
-                    } else
-                    {
-                        Log.Warn($"[SelectProperTab] Error while loading stash tab info");
-                        continue;
-                    }
-                    
-
-                }
-            }
-
-            return false;
-        }
-
-        public static List<string> ParseByDivider(string _str, char divider)
-        {
-            return _str.Split(divider).ToList();
-        }
+        #region skip
 
         public async Task<LogicResult> Logic(Logic logic)
         {
@@ -241,5 +214,7 @@ namespace cFollower
         public void Tick()
         {
         }
+
+        #endregion skip
     }
 }

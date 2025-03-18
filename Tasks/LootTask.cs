@@ -35,7 +35,7 @@ namespace cFollower
                 return false;
             }
 
-            leader = PartyHandler.GetLeaderPlayer();
+            leader = Utility.GetLeaderPlayer();
             distanceToLeader = leader.Distance;
             if (distanceToLeader > cFollowerSettings.Instance.DistanceToLeaderLoot)
             {
@@ -54,7 +54,7 @@ namespace cFollower
 
             foreach (var item in lootTable)
             {
-                var invControl = TradeTask.GetInventoryControl();
+                var invControl = TradeHelper.GetInventoryControl();
                 
                 if (invControl.Inventory.CanFitItem(item.Item) && await Coroutines.InteractWith(item))
                 {

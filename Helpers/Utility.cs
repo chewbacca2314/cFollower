@@ -120,5 +120,10 @@ namespace cFollower
 
             return fastWalkableDist < 30;
         }
+
+        public static List<string> ParseByDivider(string _str, char divider)
+        {
+            return _str.Split(divider).ToList();
+        }
     }
 }
