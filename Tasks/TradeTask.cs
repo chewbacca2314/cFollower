@@ -6,6 +6,7 @@ using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
 using DreamPoeBot.Loki.Game.GameData;
 using DreamPoeBot.Loki.Game.Objects;
+using DPBDevHelper;
 using log4net;
 
 namespace cFollower
@@ -30,25 +31,31 @@ namespace cFollower
             }
 
             if (LokiPoe.Me.PartyStatus != PartyStatus.PartyMember)
-                return false;
-
-            if (!LokiPoe.InGameState.NotificationHud.IsOpened && !LokiPoe.InGameState.TradeUi.IsOpened)
             {
-                await Coroutines.CloseBlockingWindows();
+                Log.Debug($"[{Name}] Not a party member");
                 return false;
             }
 
-            if (LokiPoe.InGameState.NotificationHud.IsOpened)
+            if (!LokiPoe.InGameState.NotificationHud.IsOpened)
             {
-                LokiPoe.ProcessHookManager.ClearAllKeyStates();
-                var acceptResult = LokiPoe.InGameState.NotificationHud.HandleNotificationEx(IsTradeRequestToBeAccepted);
-                Log.Debug($"[{Name}] Found notification. Accept result: {acceptResult}");
+                Log.Debug($"[{Name}] Notification hud not opened");
+                return false;
             }
-
-            if (!await Wait.For(() => LokiPoe.InGameState.TradeUi.IsOpened, "trade ui opened", 500, 10000))
+            if (!LokiPoe.InGameState.NotificationHud.NotificationList.Any(x => x.NotificationTypeEnum == LokiPoe.InGameState.NotificationType.Trade))
             {
-                Log.Warn($"[{Name}] Trade UI not opened");
-                await Coroutines.CloseBlockingWindows();
+                Log.Debug($"[{Name}] No trade notificatio");
+                return false;
+            }
+            LokiPoe.ProcessHookManager.ClearAllKeyStates();
+            await Wait.SleepSafe(400, 400);
+            var acceptResult = LokiPoe.InGameState.NotificationHud.HandleNotificationEx(IsTradeRequestToBeAccepted);
+
+            Log.Debug($"[{Name}] Found notification. Accept result: {acceptResult}");
+
+            if (!LokiPoe.InGameState.TradeUi.IsOpened)
+            {
+                //Log.Warn($"[{Name}] Trade UI not opened");
+                //await Coroutines.CloseBlockingWindows();
                 return false;
             }
 
@@ -71,15 +78,15 @@ namespace cFollower
             }
             else if (currentArea.IsHideoutArea || currentArea.IsTown)
             {
-                if (!await Wait.For(() => TradeHelper.GetInventoryControl() == null, "inventory control", 100, 1000))
+                if (LokiPoe.InGameState.InventoryUi.InventoryControl_Main == null)
                 {
                     Log.Debug($"[{Name}] Inventory control is null");
                     return false;
                 }
 
-                var inventoryControl = TradeHelper.GetInventoryControl();
+                var inventoryControl = LokiPoe.InGameState.InventoryUi.InventoryControl_Main;
 
-                if (inventoryControl.Inventory.Items.Count > 0)
+                if (inventoryControl?.Inventory.Items.Count > 0)
                 {
                     await TradeHelper.MoveAllFromInventory(inventoryControl, MoveType.Trade);
                 }

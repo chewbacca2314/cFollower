@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using DreamPoeBot.Loki.Bot;
 using DreamPoeBot.Loki.Common;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Game;
 using log4net;
 
@@ -37,7 +38,8 @@ namespace cFollower
         }
         public async Task<LogicResult> Logic (Logic logic)
         {
-            return LogicResult.Unprovided;
+            return await Task.FromResult(LogicResult.Unprovided);
+
         }
         public MessageResult Message(Message message)
         {

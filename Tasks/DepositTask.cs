@@ -9,6 +9,7 @@ using DreamPoeBot.Loki.Bot;
 using DreamPoeBot.Loki.Bot.Pathfinding;
 using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Game.GameData;
 using DreamPoeBot.Loki.Game.NativeWrappers;
 using DreamPoeBot.Loki.Game.Objects;

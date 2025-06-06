@@ -55,53 +55,41 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="cMover\cMover.cs" />
-    <Compile Include="cMover\cMoverGUI.xaml.cs">
-      <DependentUpon>cMoverGUI.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="cRoutine\cRoutineSettings.cs" />
-    <Compile Include="cRoutine\cRoutineGUI.xaml.cs">
-      <DependentUpon>cRoutineGUI.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Helpers\ItemFilter.cs" />
     <Compile Include="Helpers\ZoneHelper.cs" />
     <Compile Include="Helpers\TradeHelper.cs" />
     <Compile Include="Helpers\TemplateHelper.cs" />
     <Compile Include="Helpers\Utility.cs" />
     <Compile Include="Tasks\FollowTask.cs" />
-    <Compile Include="cMover\cMoverSettings.cs" />
-    <Compile Include="cRoutine\cRoutine.cs" />
-    <Compile Include="Helpers\Wait.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="cFollower.cs" />
     <Compile Include="cFollowerGUI.xaml.cs">
       <DependentUpon>cFollowerGUI.xaml</DependentUpon>
     </Compile>
     <Compile Include="cFollowerSettings.cs" />
-    <Compile Include="Tasks\PartyHandler.cs" />
-    <Compile Include="Tasks\RessurectionTask.cs" />
+    <Compile Include="Tasks\HandlePartyTask.cs" />
+    <Compile Include="Tasks\ResurrectionTask.cs" />
+    <Compile Include="Tasks\EntityScanTask.cs" />
+    <Compile Include="Tasks\CombatTask.cs" />
     <Compile Include="Tasks\TradeTask.cs" />
-    <Compile Include="Tasks\ZoneHandler.cs" />
+    <Compile Include="Tasks\HandleAreaTask.cs" />
     <Compile Include="Tasks\FallbackTask.cs" />
     <Compile Include="Tasks\LootTask.cs" />
     <Compile Include="Tasks\DepositTask.cs" />
     <Compile Include="Tasks\TestTask.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="cMover\cMoverGUI.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="cRoutine\cRoutineGUI.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="cFollowerGUI.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\DPBDevHelper\DPBDevHelper.csproj">
+      <Project>{191a69e1-5e70-4705-8bc1-78d6d1e14117}</Project>
+      <Name>DPBDevHelper</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>cd "$(DPB)\\Plugins"

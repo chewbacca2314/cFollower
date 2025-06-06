@@ -6,35 +6,45 @@ using DreamPoeBot.Common;
 using DreamPoeBot.Loki.Bot;
 using DreamPoeBot.Loki.Bot.Pathfinding;
 using DreamPoeBot.Loki.Common;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Game;
 using DreamPoeBot.Loki.Game.Objects;
 using log4net;
 
 namespace cFollower
 {
-    public class ZoneHandler : ITask
+    public class HandleAreaTask : ITask
     {
         private static readonly ILog Log = Logger.GetLoggerInstanceForType();
-        private Stopwatch zoneSW = Stopwatch.StartNew();
         private Vector2i lastSeenLeaderPos;
         private bool blockedTransition = false;
         private List<TriggerableBlockage> arenaBlockages;
         private AreaTransition areaTransition = null;
+        private Player leader;
 
         public async Task<bool> Run()
         {
-            if (!LokiPoe.IsInGame)
+            if (!LokiPoe.IsInGame || !ExilePather.IsReady)
             {
                 //Log.Info($"[{Name}] LokiPoe.IsInGame = {LokiPoe.IsInGame}");
                 return false;
             }
 
+            //if (leader != null)
+            //{
+            //    return false;
+            //}
+
             if (ZoneHelper.IsInSameZoneWithLeader())
             {
-                var leader = Utility.GetLeaderPlayer();
-                var leaderPos = leader.Position;
-                var myPos = LokiPoe.Me.Position;
-                var currentWorldArea = LokiPoe.CurrentWorldArea.Name;
+                if (leader == null)
+                {
+                    return false;
+                }
+                //var leader = Utility.GetLeaderPlayer();
+                Vector2i leaderPos = leader.Position;
+                Vector2i myPos = LokiPoe.Me.Position;
+                string currentWorldArea = LokiPoe.CurrentWorldArea.Name;
 
                 if (!blockedTransition && Utility.TransitionCheckAreas.ContainsKey(currentWorldArea))
                 {
@@ -51,43 +61,74 @@ namespace cFollower
                     }
                 }
 
-                var fastWalkable = ExilePather.FastWalkablePositionFor(leaderPos);
+                Vector2i fastWalkable = ExilePather.FastWalkablePositionFor(leaderPos);
                 if (ExilePather.PathExistsBetween(myPos, fastWalkable))
+                {
                     lastSeenLeaderPos = fastWalkable;
+                    areaTransition = null;
+                    return false;
+                }
                 else
                 {
-                    if (lastSeenLeaderPos != Vector2i.Zero)
+                    if (ExilePather.PathExistsBetween(myPos, lastSeenLeaderPos))
                     {
-                        while (lastSeenLeaderPos.Distance(myPos) > 30)
+                        if (lastSeenLeaderPos != Vector2i.Zero)
                         {
-                            Log.Debug($"[{Name}] No path to leader. Moving to last seen pos at {lastSeenLeaderPos}.");
-                            PlayerMoverManager.Current.MoveTowards(lastSeenLeaderPos);
-                            await Wait.SleepSafe(20, 30);
-                        }
-
-                        if (areaTransition == null)
-                        {
-                            areaTransition = LokiPoe.ObjectManager.GetObjectsByType<AreaTransition>()
-                                .OrderBy(x => x.Position.Distance(lastSeenLeaderPos))
-                                .FirstOrDefault(x => ExilePather.PathExistsBetween(myPos, ExilePather.FastWalkablePositionFor(x.Position, 20)));
-                        }
-
-                        var interactionResult = await Coroutines.InteractWith(areaTransition);
-                        Log.Debug($"[{Name}] Interacting with area transition {areaTransition.Name} at {areaTransition.Position}. Succesful?: {interactionResult}");
-                        await Wait.SleepSafe(100, 200);
-
-                        if (arenaBlockages?.Any() == true)
-                        {
-                            foreach (var x in arenaBlockages)
+                            if (lastSeenLeaderPos.Distance(myPos) > 30)
                             {
-                                Log.Debug($"[{Name}] We transitioned to arena. Now unblocking it at {x.Position}");
-                                Utility.RemoveObstacle(x);
+                                Log.Debug($"[{Name}] No path to leader. Moving to last seen pos at {lastSeenLeaderPos}.");
+                                PlayerMoverManager.Current.MoveTowards(lastSeenLeaderPos);
+                                await Wait.SleepSafe(20, 30);
+                            }
+
+                            if (areaTransition == null)
+                            {
+                                areaTransition = LokiPoe.ObjectManager.GetObjectsByType<AreaTransition>()
+                                    .OrderBy(x => x.Position.Distance(lastSeenLeaderPos))
+                                    .FirstOrDefault(x => ExilePather.PathExistsBetween(myPos, ExilePather.FastWalkablePositionFor(x.Position, 20)));
+                            }
+
+                            var interactionResult = await Coroutines.InteractWith(areaTransition);
+                            Log.Debug($"[{Name}] Interacting with area transition {areaTransition.Name} at {areaTransition.Position}. Succesful?: {interactionResult}");
+                            await Wait.SleepSafe(100, 200);
+
+                            if (arenaBlockages?.Any() == true)
+                            {
+                                foreach (var x in arenaBlockages)
+                                {
+                                    Log.Debug($"[{Name}] We transitioned to arena. Now unblocking it at {x.Position}");
+                                    Utility.RemoveObstacle(x);
+                                }
                             }
                         }
+                        return true;
                     }
+                    else
+                    {
+                        areaTransition = LokiPoe.ObjectManager.GetObjectsByType<AreaTransition>()
+                            .OrderBy(x => x.Position.Distance(LokiPoe.Me.Position))
+                            .FirstOrDefault(x => ExilePather.PathExistsBetween(LokiPoe.Me.Position, ExilePather.FastWalkablePositionFor(x.Position, 20)));
+
+                        if (areaTransition != null)
+                        {
+                            var interactionResult = await Coroutines.InteractWith(areaTransition);
+                            Log.Debug($"[{Name}] Interacting with area transition {areaTransition?.Name} at {areaTransition?.Position}. Succesful?: {interactionResult}");
+                            await Wait.SleepSafe(100, 200);
+
+                            if (arenaBlockages?.Any() == true)
+                            {
+                                foreach (var x in arenaBlockages)
+                                {
+                                    Log.Debug($"[{Name}] We transitioned to arena.s Now unblocking it at {x.Position}");
+                                    Utility.RemoveObstacle(x);
+                                }
+                            }
+                            return true;
+                        }
+                    }
+
+                    return true;
                 }
-                //Log.Debug($"[{Name}] We're in same zone with leader. Returning false");
-                return false;
             }
             else
             {
@@ -140,9 +181,40 @@ namespace cFollower
             return true;
         }
 
+        public MessageResult Message(Message message)
+        {
+            if (message.Id == DPBDevHelper.Enums.MessageType.PlayerListUpdate.ToString())
+            {
+                HashSet<PlayerInfo> playerList = new HashSet<PlayerInfo>();
+                if (message.TryGetInput<HashSet<PlayerInfo>>(0, out playerList))
+                {
+                    if (playerList?.Count > 0)
+                    {
+                        leader = playerList.FirstOrDefault(x => x.IsLeader)?.PlayerEntity;
+                    }
+                    //Log.Debug($"[CombatTask] Monster list processed, count {monsterList.Count}");
+                    return MessageResult.Processed;
+                };
+            }
+
+            if (message.Id == DPBDevHelper.Enums.MessageType.ZoneChange.ToString())
+            {
+                ClearData();
+            }
+
+            return MessageResult.Processed;
+        }
+
+        private void ClearData()
+        {
+            leader = null;
+            areaTransition = null;
+            lastSeenLeaderPos = Vector2i.Zero;
+        }
+
         #region skip
 
-        public string Name => "Zone Handler";
+        public string Name => "HandleAreaTask";
         public string Description => "Class to handle zone transition/swirl";
         public string Author => "chewbacca";
         public string Version => "0.0.0.1";
@@ -163,11 +235,6 @@ namespace cFollower
         public async Task<LogicResult> Logic(Logic logic)
         {
             return LogicResult.Unprovided;
-        }
-
-        public MessageResult Message(Message message)
-        {
-            return MessageResult.Processed;
         }
 
         #endregion skip

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DreamPoeBot.Loki.Bot;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Common;
 using log4net;
 
@@ -14,10 +15,19 @@ namespace cFollower
     {
         private static readonly ILog Log = Logger.GetLoggerInstanceForType();
 
+        public void Tick()
+        {
+        }
+
         public async Task<bool> Run()
         {
             await Wait.Sleep(1);
             return true;
+        }
+
+        public MessageResult Message(Message message)
+        {
+            return MessageResult.Processed;
         }
 
         #region skip
@@ -25,11 +35,6 @@ namespace cFollower
         public async Task<LogicResult> Logic(Logic logic)
         {
             return LogicResult.Unprovided;
-        }
-
-        public MessageResult Message(Message message)
-        {
-            return MessageResult.Processed;
         }
 
         public string Name => "Template Task";
@@ -43,10 +48,6 @@ namespace cFollower
         }
 
         public void Stop()
-        {
-        }
-
-        public void Tick()
         {
         }
 

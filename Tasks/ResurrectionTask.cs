@@ -6,13 +6,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using DreamPoeBot.Loki.Bot;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Common;
 using DreamPoeBot.Loki.Game;
 using log4net;
 
 namespace cFollower
 {
-    public class RessurectionTask : ITask
+    public class ResurrectionTask : ITask
     {
         private static readonly ILog Log = Logger.GetLoggerInstanceForType();
 
@@ -57,7 +58,7 @@ namespace cFollower
             return MessageResult.Processed;
         }
 
-        public string Name => "RessurectionTask";
+        public string Name => "ResurrectionTask";
         public string Description => "Task for ressurection on death logic";
         public string Author => "chewbacca";
         public string Version => "0.0.0.1";

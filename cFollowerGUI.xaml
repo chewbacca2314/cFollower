@@ -19,6 +19,19 @@
         <!--A bug in Visual Studio, sometime, bug out the design vies that show `Invalid Markup` after you set the Datacontext like done in next line.-->
         <!--Temporary solution is to remove `DataContext="{x:Static local:NullBotSettings.Instance}"` while you develope your UI and readd it befor compilation.-->
         <TabControl>
+            <TabItem Header="Tasks">
+                <StackPanel>
+                    <CheckBox IsChecked="{Binding EntityScanTaskToggle}" Content="EntityScanTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding HandlePartyTaskToggle}" Content="HandlePartyTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding ResurrectionTaskToggle}" Content="ResurrectionTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding HandleAreaTaskToggle}" Content="HandleAreaTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding CombatTaskToggle}" Content="CombatTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding TradeTaskToggle}" Content="TradeTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding DepositTaskToggle}" Content="DepositTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding LootTaskToggle}" Content="LootTaskToggle"></CheckBox>
+                    <CheckBox IsChecked="{Binding FollowTaskToggle}" Content="FollowTaskToggle"></CheckBox>
+                </StackPanel>
+            </TabItem>
             <TabItem Header="General" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -39,9 +52,17 @@
                             <TextBox Text="{Binding Path=DistanceToCheckTransition, Mode=TwoWay}" ToolTip="Distance of leader coords changed to start checking for transition nearby"/>
                             <Label Content="Obstacle size multiplier (blocking arenas)"/>
                             <TextBox Text="{Binding Path=ObstacleSizeMultiplier, Mode=TwoWay}" ToolTip="Obstacle size multiplier to block close arena transitions"/>
-                            <CheckBox Content="Trade toggle" IsChecked="{Binding Path=TradeEnabled, Mode=TwoWay}"/>
+                            <Label Content="Move type of follower" />
+                            <ComboBox Name="MoveTypeComboBox" ItemsSource="{x:Static local:cFollowerSettings.MoveTypeOptions}" SelectedValue="{Binding Path=FollowType}" SelectedIndex="0" />
                         </StackPanel>
                     </GroupBox>
+
+                </Grid>
+
+            </TabItem>
+            <TabItem Header="Trade">
+                <StackPanel>
+                    <CheckBox Content="Trade toggle" IsChecked="{Binding Path=TradeEnabled, Mode=TwoWay}"/>
                     <GroupBox Header="Deposit" Grid.Row="1" Grid.Column="0">
                         <StackPanel>
                             <CheckBox Content="Deposit toggle" IsChecked="{Binding Path=DepositEnabled, Mode=TwoWay}"/>
@@ -56,8 +77,7 @@
                         </StackPanel>
 
                     </GroupBox>
-                </Grid>
-
+                </StackPanel>
             </TabItem>
             <TabItem Header="Loot" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">

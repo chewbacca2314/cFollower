@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DPBDevHelper;
 using DreamPoeBot.BotFramework;
 using DreamPoeBot.Common;
 using DreamPoeBot.Framework;
@@ -17,7 +18,7 @@ using log4net;
 
 namespace cFollower
 {
-    public class PartyHandler : ITask
+    public class HandlePartyTask : ITask
     {
         private static readonly ILog Log = Logger.GetLoggerInstanceForType();
 
@@ -33,37 +34,6 @@ namespace cFollower
             if (partyStatus == PartyStatus.PartyMember)
             {
                 return false;
-            }
-
-            var invites = LokiPoe.InstanceInfo.PendingPartyInvites;
-            if (invites.Count == 0)
-            {
-                return false;
-            }
-
-            var validInvite = invites.First(x => x.PartyMembers.Any(y => y.PlayerEntry.Name == settings.LeaderName));
-
-            if (validInvite != null)
-            {
-                Log.Debug($"[{Name}] Party invite found");
-                
-
-                if (!await Utility.OpenSocialPanel())
-                {
-                    Log.Debug($"[{Name}] Failed to open Social Panel");
-                }
-
-                var partyAcceptResult = LokiPoe.InGameState.SocialUi.HandlePendingPartyInviteNew(settings.LeaderName);
-                await Wait.LatencySleep();
-                Log.Debug($"[{Name}] Party accept result: {partyAcceptResult}");
-                if (partyAcceptResult == LokiPoe.InGameState.HandlePendingPartyInviteResut.Accepted)
-                    return false;
-
-                await Coroutines.CloseBlockingWindows();
-            }
-            else
-            {
-                Log.Debug($"[{Name}] Valid party invite not found");
             }
 
             if (partyStatus == PartyStatus.PartyLeader) // set actual party leader if we're in party
@@ -90,12 +60,55 @@ namespace cFollower
                 return true;
             }
 
-            await Wait.LatencySleep();
+            var invites = LokiPoe.InstanceInfo.PendingPartyInvites;
+            if (invites.Count == 0)
+            {
+                return false;
+            }
+
+            var validInvite = invites.First(x => x.PartyMembers.Any(y => y.PlayerEntry.Name == settings.LeaderName));
+
+            if (validInvite != null)
+            {
+                Log.Debug($"[{Name}] Party invite found");
+
+                if (!await Utility.OpenSocialPanel())
+                {
+                    Log.Debug($"[{Name}] Failed to open Social Panel");
+                }
+
+                await Wait.SleepSafe(200, 300);
+                var partyAcceptResult = LokiPoe.InGameState.SocialUi.HandlePendingPartyInviteNew(settings.LeaderName);
+                await Wait.SleepSafe(200, 300);
+
+                Log.Debug($"[{Name}] Party accept result: {partyAcceptResult}");
+                if (partyAcceptResult == LokiPoe.InGameState.HandlePendingPartyInviteResut.Accepted)
+                {
+                    await Coroutines.CloseBlockingWindows();
+                    return false;
+                }
+
+                await Coroutines.CloseBlockingWindows();
+            }
+            else
+            {
+                Log.Debug($"[{Name}] Valid party invite not found");
+            }
+
+            await Wait.SleepSafe(200, 300);
             return true;
         }
 
+        public MessageResult Message(Message message)
+        {
+
+
+            return MessageResult.Processed;
+        }
+
         #region skip
-        public string Name => "Party Handler";
+
+        public string Name => "HandlePartyTask";
         public string Description => "Handles party composition";
         public string Author => "chewbacca";
         public string Version => "0.0.0.1";
@@ -113,15 +126,13 @@ namespace cFollower
         public void Tick()
         {
         }
+
         public async Task<LogicResult> Logic(Logic logic)
         {
-            return LogicResult.Unprovided;
+            return await Task.FromResult(LogicResult.Unprovided);
+
         }
 
-        public MessageResult Message(Message message)
-        {
-            return MessageResult.Processed;
-        }
-        #endregion
+        #endregion skip
     }
 }

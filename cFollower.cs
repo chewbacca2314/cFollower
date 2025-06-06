@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using System.Windows.Controls;
+using DPBDevHelper;
 using DreamPoeBot.Loki.Bot;
 using DreamPoeBot.Loki.Bot.Pathfinding;
 using DreamPoeBot.Loki.Common;
@@ -28,40 +25,40 @@ namespace cFollower
         public void Start()
         {
             BotManager.MsBetweenTicks = 40;
-            Log.Debug($"[Start] MS Between Ticks {BotManager.MsBetweenTicks}.");
 
             LokiPoe.ProcessHookManager.Enable();
 
-            // Cache all bound keys.
             LokiPoe.Input.Binding.Update();
-
             ExilePather.Reload();
-
             _taskManager.Reset();
+
+            AddTasks();
+            _taskManager.Start();
+
             PluginManager.Start();
             RoutineManager.Start();
             PlayerMoverManager.Start();
 
-            AddTasks();
-            _taskManager.Start();
+            DreamPoeBot.Loki.Bot.Utility.BroadcastMessage(this, Enums.MessageType.OnStartMessage.ToString());
 
             foreach (var plugin in PluginManager.EnabledPlugins)
             {
                 Log.Debug($"[Start] The plugin {plugin.Name} is enabled.");
             }
-
         }
 
         public void Stop()
         {
+            DreamPoeBot.Loki.Bot.Utility.BroadcastMessage(this, Enums.MessageType.OnStopMessage.ToString());
+
+            _taskManager.Stop();
+
             PluginManager.Stop();
             RoutineManager.Stop();
             PlayerMoverManager.Stop();
-            _taskManager.Stop();
 
             LokiPoe.ProcessHookManager.Disable();
 
-            // Cleanup the coroutine.
             if (_coroutine != null)
             {
                 _coroutine.Dispose();
@@ -78,10 +75,11 @@ namespace cFollower
 
             ExilePather.Reload();
 
+            _taskManager.Tick();
+
             PluginManager.Tick();
             RoutineManager.Tick();
             PlayerMoverManager.Tick();
-            _taskManager.Tick();
 
             if (_coroutine.IsFinished)
             {
@@ -90,7 +88,6 @@ namespace cFollower
                 return;
             }
 
-            // Otherwise Resume the coroutine execution.
             try
             {
                 _coroutine.Resume();
@@ -106,14 +103,60 @@ namespace cFollower
 
         public void AddTasks()
         {
-            _taskManager.Add(new PartyHandler());
-            _taskManager.Add(new RessurectionTask());
-            _taskManager.Add(new ZoneHandler());
-            _taskManager.Add(new TradeTask());
-            _taskManager.Add(new DepositTask());
-            _taskManager.Add(new FollowTask());
-            //_taskManager.Add(new LootTask());
-            _taskManager.Add(new FallbackTask());
+            ITask entityScanTask = new EntityScanTask();
+            ITask handlePartyTask = new HandlePartyTask();
+            ITask resurrectionTask = new ResurrectionTask();
+            ITask handleAreaTask = new HandleAreaTask();
+            ITask combatTask = new CombatTask();
+            ITask tradeTask = new TradeTask();
+            ITask depositTask = new DepositTask();
+            ITask lootTask = new LootTask();
+            ITask followTask = new FollowTask();
+
+            if (cFollowerSettings.Instance.EntityScanTaskToggle)
+            {
+                _taskManager.Add(entityScanTask);
+            }
+
+            if (cFollowerSettings.Instance.HandlePartyTaskToggle)
+            {
+                _taskManager.Add(handlePartyTask);
+            }
+
+            if (cFollowerSettings.Instance.ResurrectionTaskToggle)
+            {
+                _taskManager.Add(resurrectionTask);
+            }
+
+            if (cFollowerSettings.Instance.HandleAreaTaskToggle)
+            {
+                _taskManager.Add(handleAreaTask);
+            }
+
+            if (cFollowerSettings.Instance.CombatTaskToggle)
+            {
+                _taskManager.Add(combatTask);
+            }
+
+            if (cFollowerSettings.Instance.TradeTaskToggle)
+            {
+                _taskManager.Add(tradeTask);
+            }
+
+            if (cFollowerSettings.Instance.DepositTaskToggle)
+            {
+                _taskManager.Add(depositTask);
+            }
+
+            if (cFollowerSettings.Instance.LootTaskToggle)
+            {
+                _taskManager.Add(lootTask);
+            }
+
+            if (cFollowerSettings.Instance.FollowTaskToggle)
+            {
+                _taskManager.Add(followTask);
+            }
         }
 
         private async Task MainCoroutine()
@@ -121,7 +164,7 @@ namespace cFollower
             while (true)
             {
                 await _taskManager.Run(TaskGroup.Enabled, RunBehavior.UntilHandled);
-                
+
                 await Coroutine.Yield();
             }
         }
@@ -145,6 +188,19 @@ namespace cFollower
 
         public MessageResult Message(Message message)
         {
+            foreach (string messageType in Enums.MessageTypeList)
+            {
+                if (message.Id == messageType)
+                {
+                    _taskManager.SendMessage(TaskGroup.Enabled, message);
+                    //if (message.Id == Enums.MessageType.PointOfInterestListUpdate.ToString())
+                    //{
+                    //    Log.Warn($"[cMapper] Sent message with id {message.Id}");
+                    //}
+                    return MessageResult.Processed;
+                }
+            }
+
             return MessageResult.Unprocessed;
         }
 
